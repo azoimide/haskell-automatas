@@ -1,6 +1,8 @@
 module Auto.DFA.DFASpec where
 
 import Auto.DFA.DFA
+import Auto.DFA.TestDFAs
+
 import Test.Hspec
 import Test.QuickCheck
 import Test.Hspec.QuickCheck
@@ -32,4 +34,10 @@ spec = do
         prop "should set initial state" $ \s ->
             initial (setInitial s $ addState s newDFA) `shouldBe` (Just $ s)
 
+    describe "accepts" $ do 
+        prop "should accept strings ending in 1" $ \i ->
+            i > 0 ==> accepts ex2_1 (replicate i '0' ++ "1") `shouldBe` True
+
+        prop "should not accept strings with only 0" $ \i ->
+            i > 0 ==> accepts ex2_1 (replicate i '0') `shouldBe` False
 
