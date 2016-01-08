@@ -86,8 +86,8 @@ markAccepting s a
 newState :: String -> State
 newState l = State l []
 
-addTrans :: State -> [Char] -> Label -> State
-addTrans f cs t = State (label f) ((Transition t cs):(trans f))
+addTrans :: [Char] -> Label -> State -> State
+addTrans cs t f = State (label f) ((Transition t cs):(trans f))
 
 step :: State -> Char -> Maybe Label
 step s c = foldl mplus Nothing $ map (\t -> if c `elem` symbols t then (Just $ nextState t) else Nothing) $ trans s
