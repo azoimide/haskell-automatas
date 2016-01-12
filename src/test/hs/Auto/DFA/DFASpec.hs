@@ -41,3 +41,7 @@ spec = do
         prop "should not accept strings with only 0" $ \i ->
             i > 0 ==> accepts ex2_1 (replicate i '0') `shouldBe` False
 
+    -- describe "herp" $ do
+    --     prop "derp" $ \a -> 
+    --         length (states a) < 3 `shouldBe` True
+

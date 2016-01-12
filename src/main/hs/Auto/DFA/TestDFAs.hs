@@ -6,7 +6,7 @@ module Auto.DFA.TestDFAs (
 import Auto.DFA.DFA
 
 ex2_1 :: DFA
-ex2_1 = setInitial q0 $ markAccepting q3 $ markAccepting q4 $ foldl (.) id (map addState qs) newDFA
+ex2_1 = setInitial q0 $ markAccepting q3 $ markAccepting q4 $ addStates qs newDFA
     where
     q0 = addTrans "1" "q2" $ addTrans "0" "q1" $ newState "q0"
     q1 = addTrans "0" "q2" $ addTrans "1" "q3" $ newState "q1"

@@ -19,6 +19,7 @@ module Auto.DFA.DFA (
     -- functions to manipulate DFAs
     newDFA,
     addState,
+    addStates,
     setInitial,
     markAccepting,
 
@@ -32,8 +33,10 @@ module Auto.DFA.DFA (
     accepts
 ) where
 
-import Test.QuickCheck (Arbitrary, arbitrary)
+--import Test.QuickCheck (Arbitrary, arbitrary)
+import Test.QuickCheck hiding (label, labels)
 import Control.Monad
+import Data.List.Split
 
 type Label = String
 
@@ -59,6 +62,24 @@ data DFA = DFA {
     states :: [State]
 }
 
+instance Arbitrary DFA where
+    arbitrary = do
+        size <- suchThat (arbitrary :: Gen Int) (\x -> x >= 1 && x <= 5)
+        let alph = "012"
+        let labels = [ "q" ++ (show i) | i <- [1..size] ]
+        let transs = [ (lab,sym) | lab <- labels, sym <- alph ]
+        from <- shuffle $ map fst transs
+        let transs2 = zip from $ chunksOf (length alph) transs
+
+        let ss = map (\(f,ts) -> (foldl (.) id (map (\(t,c) -> addTrans [c] t) ts)) (newState f)) transs2
+
+        ini <- fmap head $ shuffle ss
+        noAcc <- suchThat (arbitrary :: Gen Int) (\x -> x >= 1 && x <= 3)
+        acc <- fmap (take noAcc) $ shuffle ss
+
+        return $ setInitial ini $ markAcceptings acc $ addStates ss newDFA 
+
+
 instance Show DFA where
     show a = "DFA {initial = " ++ (show $ fmap label $ initial a) ++ ", accepting = " ++ (show $ map label $ accepting a) ++ ", states = " ++ (show $ states a) ++ "}"
 
@@ -69,6 +90,9 @@ addState :: State -> DFA -> DFA
 addState s a
     | s `elem` (states a) = error ((show s) ++ " already in " ++ (show a))
     | otherwise = DFA (initial a) (accepting a) (s:(states a))
+
+addStates :: [State] -> DFA -> DFA
+addStates ss a = foldl (.) id (map (\s -> addState s) ss) a
 
 findState :: DFA -> Label -> Maybe State
 findState a l = foldl mplus Nothing $ map (\s -> if label s == l then Just s else Nothing) (states a)
@@ -82,6 +106,9 @@ markAccepting :: State -> DFA -> DFA
 markAccepting s a
     | s `elem` (states a) = DFA (initial a) (s:(accepting a)) (states a)
     | otherwise = error ((show s) ++ " not in " ++ (show a))
+
+markAcceptings :: [State] -> DFA -> DFA
+markAcceptings ss a = foldl (.) id (map (\s -> markAccepting s) ss) a
 
 newState :: String -> State
 newState l = State l []
